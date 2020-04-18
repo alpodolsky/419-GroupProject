@@ -73,4 +73,5 @@ class User():
 if __name__ == '__main__':
 	user = User('Alice')
 	user.startup()
+	user.create_socket()
 	user.network_loop()
