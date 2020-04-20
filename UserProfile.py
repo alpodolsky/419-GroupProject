@@ -1,5 +1,7 @@
 # from essential_generators import DocumentGenerator
 import socket
+import random
+import time
 
 '''
 
@@ -8,10 +10,10 @@ import socket
 '''
 
 class User():
-	def __init__(self, name, ip_addres=None, port_no=None, encryption_method=None, socket=None):
+	def __init__(self, name, ip_address=None, port_no=None, encryption_method=None, socket=None):
 		self.name = name
 		#self.gen = DocumentGenerator()
-		self.ip_addres = ip_addres
+		self.ip_address = ip_address
 		self.port_no = port_no
 		self.encryption_method = encryption_method
 		self.socket = socket
@@ -24,79 +26,89 @@ class User():
 		print('For shared key encryption, type "ske"')
 		print('For private key encryption, type "pke"')
 
-		self.encryption_method = input("So which encryption option would you like?: ")
+		# self.encryption_method = input("So which encryption option would you like?: ")
 
 		# All this code is subject to change based on how the server is created
-		self.ip_address = input("Please tell me the server IP: ")
-		self.port_no = int(input("Please tell me the port of the server: "))
+		# self.ip_address = input("Please tell me the server IP: ")
+		# self.port_no = int(input("Please tell me the port of the server: "))
+		self.ip_address = socket.gethostname()
+		self.port_no = 10103
 
 	# Takes care of creating our socket
 	def create_socket(self):
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.socket.connect((self.ip_address, self.port_no))
 
-	def recv_message(self):
-		message = ''
+	def gen_random_sentences(self):
+		nouns = ("puppy", "car", "rabbit", "girl", "monkey")
+		verbs = ("runs", "hits", "jumps", "drives", "barfs") 
+		adv = ("crazily.", "dutifully.", "foolishly.", "merrily.", "occasionally.")
+		adj = ("adorable", "clueless", "dirty", "odd", "stupid")
+		num = random.randrange(0,5)
+		l = [nouns, verbs, adj, adv]
+		return ' '.join([random.choice(i) for i in l])
 
-		buff = self.socket.recv(1)
+	def send_message(self, msg, user_flag):
+		# print(f'Sending this to server: {msg}')
+		num_bytes = self.socket.send(bytes(msg, 'utf-8'))
 
-		while(str(buff) != '\0'):
-			message += str(buff)
-			buff = self.socket.recv(1)
+		if user_flag == '0': # This is alice sending message
+			print(f'Alice: {msg}')
+		elif user_flag == '1':
+			print(f'Bob: {msg}')
+		# print(f'Number of bytes sent: {num_bytes}')
+		time.sleep(1)
 
-		return message
+	def recv_message(self, user_flag):
+		message_from_server = self.socket.recv(1024).decode('utf-8')
+		# print(f'Received this message from server: {message_from_server}')
+		if user_flag == '0': # This is alice sending message
+			print(f'Bob: {message_from_server}')
+		elif user_flag == '1':
+			print(f'Alice: {message_from_server}')
 
-	def send_message(self, message):
-		message_len = len(message)
-
-		i = 0
-		while( i < message_len ):
-			self.socket.sendall(message[i].encode('utf-8'))
-
-			i+=1
-
-	# Takes care of sending a random message from socket
-	#def send_message(self):
-	#	max_messages = 4
-	#	message = ''
-
-	#	for num_message in range(max_messages):
-	#		random_sentence = self.gen.sentence()
-	#		if (len(message) + random_sentence > 1024):
-	#			break
-	#		else:
-	#			message = message + " " + random_sentence
-		
-	#	self.socket.sendall(message.encode('utf-8'))
-	
 	def network_loop(self):
-		self.create_socket()
 
-		# Send server inital packet to start connection
-		# self.socket.sendall(b'HELLO\0')
+		msg = self.socket.recv(1024).decode('utf-8')
+		print(msg)
+
+		message_to_send = "Hello"
+		self.send_message(message_to_send, 10)
+		# print(f'Sending this to server: {message_to_send}')
+		# self.socket.send(bytes(message_to_send, 'utf-8'))
+		# time.sleep(0.5)
+		user_flag = msg[-1]
+
+		# First user
+		if user_flag == '0':
+			i = 0
+			while i < 5:
+				message_to_send = self.gen_random_sentences()
+				# print(f'Sending "{message_to_send}" to server')
+				# n = self.socket.send(bytes(message_to_send, 'utf-8'))
+				self.send_message(message_to_send, user_flag)
+				self.recv_message(user_flag)
+
+
+				# message_from_server = self.socket.recv(1024)
+				# # print(f'Received this message from server: {message_from_server}')
+				# print(f'Bob: {message_from_server}')
+				i += 1
+			self.socket.send(bytes('Stop', 'utf-8'))
 		
-		self.socket.sendall(b'HELLO')
-
-		#self.socket.sendall(self.encryption_method.encode('utf-8'))
-
-		# Receive confirmation that server got the user info. Also this info will tell
-		# the client whether they are receiving a message from someone already there
-		# or are the first to send. BASICALLY THIS IS WHERE WE RECEIVE GEN INFO FROM SERVER
-		#server_message = self.socket.recv(16)
-
-		#if server_message == 1: # Temporary case, but if this is 1, then this client is receiving info
-		#	self.socket.recv(1024)
-
-		# Condition for this loop will change based on how we plan on terminating the message chat
-		# while(True):
-			# Creating random sentences and send them to the server
-		#	self.send_message()
-		#	self.socket.sendall(b'Test RESPONSE. Does it work?')
-		messg = self.socket.recv(1024)
-		if messg:
-			print("Message from server: ", repr(messg))
+		# Not the first user
 		else:
-			print("Message not received")
+			i = 0
+			while i < 5:
+				self.recv_message(user_flag)
+				# message_from_server = self.socket.recv(1024)
+				# print(f'Received this message from server: {message_from_server}')
+				message_to_send = self.gen_random_sentences()
+				self.send_message(message_to_send, user_flag)
+				i += 1
+
+	def close_socket(self):
+		self.socket.close()
 
 if __name__ == '__main__':
 	user = User('Alice')
