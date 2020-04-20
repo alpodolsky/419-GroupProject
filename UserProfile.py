@@ -1,4 +1,4 @@
-from essential_generators import DocumentGenerator
+# from essential_generators import DocumentGenerator
 import socket
 
 '''
@@ -10,7 +10,7 @@ import socket
 class User():
 	def __init__(self, name, ip_addres=None, port_no=None, encryption_method=None, socket=None):
 		self.name = name
-		self.gen = DocumentGenerator()
+		#self.gen = DocumentGenerator()
 		self.ip_addres = ip_addres
 		self.port_no = port_no
 		self.encryption_method = encryption_method
@@ -28,47 +28,75 @@ class User():
 
 		# All this code is subject to change based on how the server is created
 		self.ip_address = input("Please tell me the server IP: ")
-		self.port_no = input("Please tell me the port of the server: ")
+		self.port_no = int(input("Please tell me the port of the server: "))
 
 	# Takes care of creating our socket
 	def create_socket(self):
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.socket.connect((self.ip_address), self.port_no)
+		self.socket.connect((self.ip_address, self.port_no))
 
-	# Takes care of sending a random message from socket
-	def send_message(self):
-		max_messages = 4
+	def recv_message(self):
 		message = ''
 
-		for num_message in range(max_messages):
-			random_sentence = self.gen.sentence()
-			if (len(message) + random_sentence > 1024):
-				break
-			else:
-				message = message + " " + random_sentence
+		buff = self.socket.recv(1)
+
+		while(str(buff) != '\0'):
+			message += str(buff)
+			buff = self.socket.recv(1)
+
+		return message
+
+	def send_message(self, message):
+		message_len = len(message)
+
+		i = 0
+		while( i < message_len ):
+			self.socket.sendall(message[i].encode('utf-8'))
+
+			i+=1
+
+	# Takes care of sending a random message from socket
+	#def send_message(self):
+	#	max_messages = 4
+	#	message = ''
+
+	#	for num_message in range(max_messages):
+	#		random_sentence = self.gen.sentence()
+	#		if (len(message) + random_sentence > 1024):
+	#			break
+	#		else:
+	#			message = message + " " + random_sentence
 		
-		self.socket.sendall(message.encode('utf-8'))
+	#	self.socket.sendall(message.encode('utf-8'))
 	
 	def network_loop(self):
-		self.socket = create_socket()
+		self.create_socket()
 
-		# Send server the user type
-		self.socket.sendall(b'User')
-		self.socket.sendall(self.encryption_method.encode('utf-8'))
+		# Send server inital packet to start connection
+		# self.socket.sendall(b'HELLO\0')
+		
+		self.socket.sendall(b'HELLO')
+
+		#self.socket.sendall(self.encryption_method.encode('utf-8'))
 
 		# Receive confirmation that server got the user info. Also this info will tell
 		# the client whether they are receiving a message from someone already there
 		# or are the first to send. BASICALLY THIS IS WHERE WE RECEIVE GEN INFO FROM SERVER
-		server_message = self.socket.recv(16)
+		#server_message = self.socket.recv(16)
 
-		if server_message == 1: # Temporary case, but if this is 1, then this client is receiving info
-			self.socket.recv(1024)
+		#if server_message == 1: # Temporary case, but if this is 1, then this client is receiving info
+		#	self.socket.recv(1024)
 
 		# Condition for this loop will change based on how we plan on terminating the message chat
-		while(True):
+		# while(True):
 			# Creating random sentences and send them to the server
-			self.send_message()
-			self.socket.recv(1024)
+		#	self.send_message()
+		#	self.socket.sendall(b'Test RESPONSE. Does it work?')
+		messg = self.socket.recv(1024)
+		if messg:
+			print("Message from server: ", repr(messg))
+		else:
+			print("Message not received")
 
 if __name__ == '__main__':
 	user = User('Alice')
