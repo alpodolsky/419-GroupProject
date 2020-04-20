@@ -1,0 +1,8 @@
+So while putting this together i looked through what the user looks like, and tbh server is just its inverse.
+Didn't get to test what i made either but its mostly stuff that I know works from the past, I changed a couple of things and only took the mostly
+    relevant and related portions.
+We just need to translate the jist of server into python and change the stuff mentioned in the comments throughout a couple of functions
+Get server to be able to accept messages from client
+Figure out how to connect multiple users together
+Encorporate the encrytion algos
+Leave chuck for last
