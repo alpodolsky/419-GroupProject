@@ -1,9 +1,9 @@
 from random import random, randint
-def encrypt(message):
+def encrypt(message, key1, key2):
     hold = ''
     encrypted= []
-    key1 = randint(0,10000)
-    print("Key 1: ",key1)
+    # key1 = randint(0,10000)
+    # print("Key 1: ",key1)
 
     for i in range(len(message)):
         char = message[i]
@@ -16,8 +16,8 @@ def encrypt(message):
         else:
             hold += chr((ord(char) + key1-97) % 26 + 97)
     print("caesar cipher: " + hold)
-    key2 = randint(0,50)
-    print("Key 2: " ,key2)
+    # key2 = randint(0,50)
+    # print("Key 2: " ,key2)
     for i in hold:
         x = ord(i) - key2
         encrypted.append(x)
@@ -26,9 +26,10 @@ def encrypt(message):
         print(i, end='')
 
     print()
-    decrypt(message, encrypted, key1, key2)
+    return encrypted
+    # decrypt(message, encrypted, key1, key2)
 
-def decrypt(message, encrypted, key1, key2):
+def decrypt(encrypted, key1, key2):
     decrypted = ""
     for i in encrypted:
         x = int(i)
@@ -50,7 +51,10 @@ def decrypt(message, encrypted, key1, key2):
     decrypted = hold
     # if decrypted != message:
     #     decrypted = message
-    print("Decrpyted message:", decrypted)
+    # print("Decrpyted message:", decrypted)
+
+    return decrypted
+
 def main():
 
     message = input("Input message: ")
