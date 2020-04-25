@@ -22,7 +22,7 @@ class User():
 	def startup(self):
 		print("Here are your options for encrypting:")
 
-		print('Your encryption methods include: playfair and laboy')
+		print('Your encryption methods include: playfair, laboy, and porta')
 		self.encryption_method = input("So which encryption option would you like?: ")
 		# self.encryption_method = 'playfair'
 
