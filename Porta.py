@@ -45,8 +45,8 @@ def encrypt(plain, key):
             encrypted += " "
         else:
             a = 'a'
-            row = (keyText[index2] - 'a')/2
-            col = plainNoSpace[index2] - 'a'
+            row = (ord(keyText[index2]) - ord(a))/2
+            col = ord(plainNoSpace[index2]) - ord(a)
             encrypted += tab[row][col]
             if index2 == len(keyText) - 1:
                 index2 = 0
