@@ -1,63 +1,80 @@
-def table():
-    firstHalf = "abcdefghijklm"
-    secondHalf = "nopqrstuvwxyz"
-    table1 = 0
+import numpy as np
+
+def create_table():
+    firsthalf = 'abcdefghijklm'
+    secondhalf = 'nopqrstuvwxyz'
+
+    matrix = np.chararray((13, 26))
+
     index = 0
-    for x in range(table1):
+
+    for i in range(len(firsthalf)):
         index2 = index
-        for y in range(table1):
-            letter = secondHalf[index2]
-            table[x][y]=letter
+        for j in range(len(secondhalf)):
+            letter = secondhalf[index2]
+            matrix[i][j] = letter
+
             if index2 + 1 == 13:
                 index2 = 0
             else:
-                index2 =+ 1
+                index2+=1
+        
         index3 = index
-        for y in range(table1):
-            letter = firstHalf[index3]
-            table[x][y+13] = letter
+        for j in range(len(secondhalf)):
+            letter = firsthalf[index3]
+            matrix[i][j+13] = letter
+
             if index3 + 1 == 13:
                 index3 = 0
             else:
-                index3=+1
-        if index + 1 == 13:
-            index =0
+                index3+=1
+        
+        if index+1 == 13:
+            index = 0
         else:
-            index += 1
-    return table
+            index+=1
+    
+    return matrix
 
-def encrypt(plain, key):
-    encrypted = ""
-    tab = table()
-    plainNoSpace = ""
-    keyText = ""
-    plainNoSpace = plain.replace(" ", "")
-    index = 0;
-    for x in range(len(plainNoSpace)):
+def encrypt(plaintext, key):
+    ciphertext = ''
+    matrix = create_table()
+    print(matrix)
+    plaintext_no_space = plaintext.replace(' ', '')
+    keyText = ''
+    index = 0
+
+    for x in range(len(plaintext_no_space)):
         keyText += key[index:index+1]
+        
         if index == len(key)-1:
-            index =0
+            index = 0
         else:
-            index +=1
-    index2 = 0
-    for x in range(len(plain)):
-        if plain[x: x+1] == " ":
-            encrypted += " "
+            index+=1
+    
+    index = 0
+
+    for i in range(len(plaintext)):
+        if plaintext[i:i+1] == ' ':
+            ciphertext += ' '
         else:
-            a = 'a'
-            row = (ord(keyText[index2]) - ord(a))/2
-            col = ord(plainNoSpace[index2]) - ord(a)
-            encrypted += tab[row][col]
-            if index2 == len(keyText) - 1:
-                index2 = 0
+            row = (ord(keyText[index]) - ord('a')) / 2
+            column = ord(plaintext_no_space[index]) - ord('a')
+
+            print(f'Row: {row} and column: {column}')
+
+            ciphertext += matrix[int(row)][int(column)].decode('utf-8')
+            if index == len(keyText)-1:
+                index = 0
             else:
-                index2+=1
-    return encrypted
+                index+=1
+    
+    return ciphertext
 
 def main():
+    plaintext = 'defend the walls of the castle'
+    key = 'fortify'
+    p = encrypt(plaintext, key)
+    print(p)
 
-    plain = "defend the walls of the castle"
-    key = "fortify"
-    print(encrypt(plain,key))
-if __name__ == '__main__':
-    main()
+main()
