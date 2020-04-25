@@ -22,13 +22,9 @@ class User():
 	def startup(self):
 		print("Here are your options for encrypting:")
 
-		# Add the print statements for the encryption methods (subject to change)
-		print('For shared key encryption, type "ske"')
-		print('For private key encryption, type "pke"')
-
-		# print('Your encryption methods include: playfair, laboy, and porta')
-		# self.encryption_method = input("So which encryption option would you like?: ")
-		self.encryption_method = 'playfair'
+		print('Your encryption methods include: playfair and laboy')
+		self.encryption_method = input("So which encryption option would you like?: ")
+		# self.encryption_method = 'playfair'
 
 		# All this code is subject to change based on how the server is created
 		# self.ip_address = input("Please tell me the server IP: ")
