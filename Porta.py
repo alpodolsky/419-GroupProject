@@ -58,12 +58,14 @@ def encrypt(plaintext, key):
     
     index = 0
 
+    ascii_a = ord('a')
+
     for i in range(len(plaintext)):
-        if plaintext[i:i+1] == ' ':
-            ciphertext += ' '
+        if plaintext[i:i+1] == ' ' or plaintext[i:i+1] == '.':
+            ciphertext += plaintext[i:i+1]
         else:
-            row = (ord(keyText[index]) - ord('a')) / 2
-            column = ord(plaintext_no_space[index]) - ord('a')
+            row = (ord(keyText[index]) - ascii_a) / 2
+            column = ord(plaintext_no_space[index]) - ascii_a
 
             ciphertext += matrix[int(row)][int(column)].decode('utf-8')
             if index == len(keyText)-1:
@@ -74,12 +76,13 @@ def encrypt(plaintext, key):
     return ciphertext
 
 def main():
-    plaintext = 'defend the walls of the castle'
-    ciphertext = 'synnjs hwy bwpng mz lqv rzdmtn'
-    key = 'fortify'
+    plaintext = 'car drives dirty merrily.'
+    # ciphertext = 'synnjs hwy bwpng mz lqv rzdmtn'
+    key = 'bmbblnvft'
     p = encrypt(plaintext, key)
     print(p)
-    p = encrypt(ciphertext, key)
-    print(p)
+    # p = encrypt(ciphertext, key)
+    # print(p)
 
-main()
+if __name__ == "__main__":
+    main()
