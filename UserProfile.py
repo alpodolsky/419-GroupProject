@@ -10,21 +10,16 @@ import time
 '''
 
 class User():
-	def __init__(self, name, ip_address=None, port_no=None, encryption_method=None, socket=None):
+	def __init__(self, name, ip_address=None, port_no=None, socket=None):
 		self.name = name
 		#self.gen = DocumentGenerator()
 		self.ip_address = ip_address
 		self.port_no = port_no
-		self.encryption_method = encryption_method
 		self.socket = socket
 
 	# Takes care of getting the encryption method, ip address, and port number
 	def startup(self):
 		print("Here are your options for encrypting:")
-
-		print('Your encryption methods include: playfair, laboy, and porta')
-		self.encryption_method = input("So which encryption option would you like?: ")
-		# self.encryption_method = 'playfair'
 
 		# All this code is subject to change based on how the server is created
 		# self.ip_address = input("Please tell me the server IP: ")
@@ -73,16 +68,17 @@ class User():
 
 		message_to_send = "Hello"
 		self.send_message(message_to_send, 10) # User flag doesn't matter in this case
-		time.sleep(0.5)
-		self.send_message(self.encryption_method, 10) # Send the encryption method to server
 		
-
 		# First user
 		if user_flag == '0':
 
 			# Piece of code is meant for dealing with what kind of key they would like
 			key_type = input("What kind of key type would you like? Type pke for private key or ske for shared key: ")
 			self.send_message(key_type, 10)
+
+			# Piece of code is meant for dealing with what kind of encryption method is sent
+			print('Your encryption methods include: playfair, laboy, and porta')
+			self.send_message(input("So which encryption option would you like?: "), 10)
 
 			i = 0
 			while i < 5:
