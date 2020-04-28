@@ -27,24 +27,20 @@ class Attacker():
 
         self.send_message('Hlelo')
 
+        print("You have 4 query methods: ciphertext-only, known-plaintext, chosen-plaintext, chosen-ciphertext")
+        self.query_method = input("Which query method would you like: ")
+
+        self.cipher_texts = []
+        self.plain_texts = []
 
         while True:
-            print("You have 4 query methods: ciphertext-only, known-plaintext, chosen-plaintext, chosen-ciphertext")
-            self.query_method = input("Which query method would you like: ")
-
-            if self.query_method == 's':
-                break
 
             self.send_message(self.query_method)
-            
-            self.cipher_texts = []
-            self.plain_texts = []
 
             if self.query_method == 'ciphertext-only':
                 for i in range(5):
                     self.cipher_texts.append(self.recv_message())
                     print(self.cipher_texts[i])
-                print(f'This is your cipher-texts: {self.cipher_texts}')
 
             elif self.query_method == 'known-plaintext':
                 for i in range(5):
@@ -53,20 +49,30 @@ class Attacker():
                     print(self.cipher_texts[i])
                     self.plain_texts.append(plain_ciphers[1])
                     print(self.plain_texts[i])
-                print(f'This is your cipher-texts: {self.cipher_texts}')
-                print(f'This is your plain-texts: {self.plain_texts}')
                     
             elif self.query_method == 'chosen-plaintext':
                 message = input("Enter a message you would like to have encrypted: ")
+                self.plain_texts.append(message)
                 self.send_message(message)
                 encrypted_message = self.recv_message()
+                self.cipher_texts.append(encrypted_message)
                 print(f'This is the encrypted message: {encrypted_message}')
 
             elif self.query_method == 'chosen-ciphertext':
                 message = input("Enter a message you would like to have decrypted: ")
+                self.cipher_texts.append(message)
                 self.send_message(message)
                 decrypted_message = self.recv_message()
+                self.plain_texts.append(decrypted_message)
                 print(f'This is the decrypted message: {decrypted_message}')
+
+            print(f'This is your current cipher-texts stored: {self.cipher_texts}')
+            print(f'This is your current plain-texts stored: {self.plain_texts}')
+
+            if input("Would you like more info (type 'y' for yes and 'n' for no): ") == 'n':
+                print('Ok thanks for playing! Goodbye.')
+                break
+        
 
 
 
