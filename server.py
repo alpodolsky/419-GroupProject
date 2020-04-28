@@ -1,6 +1,7 @@
 import socket
 import time
-from _thread import start_new_thread
+import random
+from _thread import start_new_thread, allocate_lock
 from PlayFairCipher import PLEncrypt, PLDecrypt
 from laboyCipher import encrypt as laboy_encrypt, decrypt as laboy_decrypt
 from Porta import encrypt as porta_encrypt
@@ -12,6 +13,7 @@ full_ciphertext = []
 full_plaintext = []
 keys = []
 encryption_method = ''
+lock = allocate_lock()
 
 def main():
     # global user_count
@@ -19,7 +21,6 @@ def main():
 
     key_type = ''
     user_count = 0
-    
 
     # portno = int(input("Gimme port no: "))
 
@@ -33,25 +34,34 @@ def main():
     while True:
         client_socket, client_address = server_socket.accept()
         print(f'Connection from {client_address} has been established')
-        client_socket.send(bytes(f"Welcome to the server. You are user: {user_count}", 'utf-8'))
 
-        # Should just recieve 'hello' for confirmation
-        client_message = client_socket.recv(1024).decode('utf-8')
-        print(f'Received this from client: {client_message}')
+        if user_count < 2:
 
-        if user_count == 0:
-            key_type = client_socket.recv(1024).decode('utf-8')
-            encryption_method = client_socket.recv(1024).decode('utf-8').lstrip().rstrip()
-            print("This is the encryption method: ", encryption_method)
+            client_socket.send(bytes(f"Welcome to the server. You are user: {user_count}", 'utf-8'))
 
-        keys.append(generateKey(encryption_method))
-        print(f'My user count is {user_count} and my key is {keys[user_count]}')
+            # Should just recieve 'hello' for confirmation
+            client_message = client_socket.recv(1024).decode('utf-8')
+            print(f'Received this from client: {client_message}')
 
-        if key_type == 'ske':
-            keys.append(keys[0]) # Both keys for both users are the same
+            if user_count == 0:
+                key_type = client_socket.recv(1024).decode('utf-8')
+                encryption_method = client_socket.recv(1024).decode('utf-8').lstrip().rstrip()
+                print("This is the encryption method: ", encryption_method)
 
+            keys.append(generateKey(encryption_method))
+            print(f'My user count is {user_count} and my key is {keys[user_count]}')
 
-        threads.append(start_new_thread(handle_comms, (client_socket,user_count)))
+            if key_type == 'ske':
+                keys.append(keys[0]) # Both keys for both users are the same
+
+            threads.append(start_new_thread(handle_comms, (client_socket,user_count)))
+
+        else:
+            #somthing for the attacker
+            client_message = client_socket.recv(1024).decode('utf-8')
+            print(f'Received this from attacker: {client_message}')
+            
+            threads.append(start_new_thread(handle_attack, (client_socket,)))
 
         user_count+=1
 
@@ -86,7 +96,6 @@ def recv_message(client_socket, key, user_count):
 
     return
 
-
 # Every time the server sends out a message,
 # it will decrypt the ciphertext and send that (not the message in plaintext)
 def send_message(client_socket, encrypted_message, key, user_count):
@@ -101,7 +110,6 @@ def send_message(client_socket, encrypted_message, key, user_count):
     if encryption_method == 'playfair':
         decrypted_message = PLDecrypt(encrypted_message, key)
     elif encryption_method == 'porta':
-        print('We got here bois')
         decrypted_message = porta_encrypt(encrypted_message, key)
     elif encryption_method == 'laboy':
         decrypted_message = laboy_decrypt(encrypted_message, key[0], key[1])
@@ -162,6 +170,57 @@ def handle_comms(client_socket, user_count):
                 recv_message(client_socket, keys[1], user_count)
 
     return
+
+def handle_attack(client_socket):
+    global lock
+    global keys
+    global full_ciphertext
+    global full_plaintext
+    while True:
+
+        query_method = client_socket.recv(1024).decode('utf-8')
+
+        if query_method == 's':
+            break
+
+        if query_method == 'ciphertext-only':
+            lock.acquire()
+            ciphertexts = full_ciphertext[-5:]
+            lock.release()
+            for ciphertext in ciphertexts:
+                client_socket.send(bytes(ciphertext, 'utf-8'))
+                time.sleep(1)
+        
+        elif query_method == 'known-plaintext':
+            lock.acquire()
+            ciphertexts = full_ciphertext[-5:]
+            plaintexts = full_plaintext[-5:]
+            lock.release()
+            for i in range(5):
+                client_socket.send(bytes(ciphertexts[i] + ',' + plaintexts[i], 'utf-8'))
+                time.sleep(1)
+
+        elif query_method == 'chosen-plaintext':
+            message = client_socket.recv(1024).decode('utf-8')
+            if encryption_method == 'playfair':
+                encrypted_message = PLEncrypt(message, keys[0])
+            elif encryption_method == 'porta':
+                encrypted_message = porta_encrypt(message, keys[0])
+            elif encryption_method == 'laboy':
+                encrypted_message = laboy_encrypt(message, keys[0][0], keys[0][1])
+            client_socket.send(bytes(encrypted_message, 'utf-8'))
+            time.sleep(1)
+        
+        elif query_method == 'chosen-ciphertext':
+            message = client_socket.recv(1024).decode('utf-8')
+            if encryption_method == 'playfair':
+                decrypted_message = PLDecrypt(message, keys[0])
+            elif encryption_method == 'porta':
+                decrypted_message = porta_encrypt(message, keys[0])
+            elif encryption_method == 'laboy':
+                decrypted_message = laboy_decrypt(message, keys[0][0], keys[0][1])
+            client_socket.send(bytes(decrypted_message, 'utf-8'))
+            time.sleep(1)
 
 
 if __name__ == '__main__':
