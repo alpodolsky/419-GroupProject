@@ -7,7 +7,7 @@ def encrypt(message, key1, key2):
 
     for i in range(len(message)):
         char = message[i]
-        if char == " ":
+        if char == " " or char == '.':
             hold = hold + char
             continue
         if char.isupper():
@@ -40,7 +40,7 @@ def decrypt(encrypted, key1, key2):
     hold = ''
     for i in range(len(decrypted)):
         char = decrypted[i]
-        if char == " ":
+        if char == " " or char == '.':
             hold += char
             continue
         if char.isupper():
@@ -58,7 +58,9 @@ def decrypt(encrypted, key1, key2):
 def main():
 
     message = input("Input message: ")
-    encrypt(message)
+    encrypted_message = encrypt(message, 24, 100)
+    print(encrypted_message)
+    print(decrypt(encrypted_message, 24, 100))
 
 if __name__ == '__main__':
     main()
